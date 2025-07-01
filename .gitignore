@@ -1,0 +1,17 @@
+# Ignore .env files
+.env
+
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore log files
+*.log
+
+# Ignore IDE and system files
+.idea/
+*.iml
+
+
+# Ignore environment files (API keys)
+config/.env
