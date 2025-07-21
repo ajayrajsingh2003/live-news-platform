@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Topics Explorer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud@1.2.5/build/d3.layout.cloud.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-teal: #1d8a99;
+            --primary-dark-teal: #166772;
+            --primary-light-teal: #2ba3b4;
+            --secondary-blue: #205375;
+            --secondary-dark-blue: #16405c;
+            --accent-gold: #f3a950;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --background-light: #f2f7f8;
+            --card-color: #ffffff;
+            --border-color: #e0e6ed;
+            --selected-border: rgba(29, 138, 153, 0.5);
+            --selected-bg: rgba(29, 138, 153, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-teal));
+            color: var(--text-light);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .main-container {
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--secondary-blue);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn i {
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            min-height: calc(100vh - 200px);
+            gap: 20px;
+        }
+        
+        .word-cloud-container {
+            width: 60%;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .content-container {
+            width: 40%;
+            border-radius: 10px;
+            background-color: var(--card-color);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #word-cloud {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .word-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+        
+        .word {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            white-space: nowrap;
+            user-select: none;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .word:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        
+        .word.selected {
+            box-shadow: 0 0 0 2px var(--selected-border), 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px) scale(1.05);
+            font-weight: bold;
+            filter: brightness(120%);
+            z-index: 2;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-color);
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            border-bottom: 3px solid transparent;
+            opacity: 0.7;
+        }
+        
+        .tab.active {
+            color: var(--primary-teal);
+            border-bottom: 3px solid var(--primary-teal);
+            opacity: 1;
+        }
+        
+        .tab i {
+            margin-right: 8px;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: rgba(0,0,0,0.02);
+            opacity: 0.9;
+        }
+        
+        .content-view {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-teal) transparent;
+            display: none;
+        }
+        
+        .content-view.active {
+            display: block;
+        }
+        
+        .content-view::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .content-view::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .content-view::-webkit-scrollbar-thumb {
+            background-color: var(--primary-teal);
+            border-radius: 6px;
+        }
+        
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-teal);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background-color: var(--card-color);
+            z-index: 5;
+        }
+        
+        .section-header .count {
+            background-color: var(--primary-teal);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+            min-width: 28px;
+            text-align: center;
+        }
+        
+        .load-more {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            margin: 10px 20px;
+            border-radius: 4px;
+            background-color: var(--background-light);
+            color: var(--primary-teal);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .load-more:hover {
+            background-color: rgba(29, 138, 153, 0.1);
+        }
+        
+        /* News item styling */
+        .news-item {
+            padding: 20px;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .news-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .news-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--secondary-blue);
+            line-height: 1.4;
+        }
+        
+        .news-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .news-meta i {
+            margin-right: 6px;
+            color: var(--primary-teal);
+        }
+        
+        .news-meta-item {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .news-description {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .news-url {
+            font-size: 13px;
+            color: var(--primary-teal);
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        
+        .news-url:hover {
+            text-decoration: underline;
+        }
+        
+        /* Videos item styling */
+        .video-item {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .video-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .video-thumbnail-container {
+            position: relative;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        .video-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        
+        .video-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        
+        .video-play-button i {
+            font-size: 24px;
+            color: var(--primary-teal);
+        }
+        
+        .video-thumbnail-container:hover .video-play-button {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .video-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--secondary-blue);
+            line-height: 1.4;
+        }
+        
+        .video-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .video-meta i {
+            margin-right: 6px;
+            color: var(--primary-teal);
+        }
+        
+        .video-meta-item {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .video-description {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .video-url {
+            font-size: 13px;
+            color: var(--primary-teal);
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        
+        .video-url:hover {
+            text-decoration: underline;
+        }
+        
+        .placeholder {
+            padding: 40px 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            margin: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .placeholder i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-teal);
+            opacity: 0.4;
+        }
+        
+        .loader {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--primary-teal);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -20px;
+            margin-left: -20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theme-toggle {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .theme-toggle i {
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .reset-button {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .reset-button.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .reset-button:hover {
+            transform: scale(1.1);
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .reset-button i {
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .topic-selected {
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+        }
+
+        .topic-selected.visible {
+            opacity: 1;
+        }
+        
+        .debug-info {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .debug-info.visible {
+            display: block;
+        }
+        
+        /* Color categories for words */
+        .color-politics { color: #FF6B6B; }
+        .color-government { color: #4ECDC4; }
+        .color-us { color: #FF8C94; }
+        .color-justice { color: #A178DF; }
+        .color-economy { color: #F3A950; }
+        .color-social { color: #45B7D1; }
+        .color-world { color: #6A67CE; }
+        .color-nature { color: #63C132; }
+        .color-tech { color: #1976D2; }
+        .color-default { color: #205375; }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .word-cloud-container, .content-container {
+                width: 100%;
+            }
+            
+            .word-cloud-container {
+                height: 500px;
+            }
+            
+            .content-container {
+                height: auto;
+                margin-top: 20px;
+            }
+            
+            .content-view {
+                max-height: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-bottom: 15px;
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+            
+            .topic-selected {
+                margin-right: auto;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .word-cloud-container {
+                height: 400px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .main-container {
+                padding: 10px;
+            }
+            
+            .word {
+                padding: 4px 8px;
+                font-size: 0.9rem !important;
+            }
+            
+            .section-header {
+                padding: 12px 15px;
+                font-size: 1rem;
+            }
+            
+            .news-item, .video-item {
+                padding: 15px;
+            }
+        }
+        
+        /* Dark mode theme */
+        body.dark-theme {
+            --background-light: #1a1a2e;
+            --card-color: #16213e;
+            --text-dark: #e6e6e6;
+            --text-light: #fff;
+            --border-color: #2a2a40;
+            --selected-bg: rgba(29, 138, 153, 0.2);
+        }
+
+        body.dark-theme .word {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Trending Topics Explorer</h1>
+            <p>Discover the latest news and videos about trending topics</p>
+        </div>
+        <div class="header-right">
+            <div class="topic-selected" id="topic-selected">
+                <i class="fas fa-tag"></i>
+                <span id="selected-topic-text"></span>
+            </div>
+            <div class="reset-button" id="reset-button" onclick="resetSelection()">
+                <i class="fas fa-undo"></i>
+            </div>
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="controls">
+            <button class="btn" id="fetch-btn" onclick="loadData()">
+                <i class="fas fa-sync-alt"></i> Fetch Data
+            </button>
+            <button class="btn" id="regenerate-btn" onclick="regenerateLayout()">
+                <i class="fas fa-random"></i> Regenerate Layout
+            </button>
+            <button class="btn" id="debug-btn" onclick="toggleDebug()">
+                <i class="fas fa-bug"></i> Toggle Debug Info
+            </button>
+            <button class="btn" id="mode-btn" onclick="toggleDisplayMode()">
+                <i class="fas fa-th-large"></i> <span id="mode-text">Grid View</span>
+            </button>
+        </div>
+        
+        <div class="container">
+            <div class="word-cloud-container">
+                <div id="word-cloud">
+                    <div class="loader"></div>
+                </div>
+            </div>
+            <div class="content-container">
+                <div class="tabs">
+                    <div class="tab active" onclick="changeTab('news')">
+                        <i class="fas fa-newspaper"></i> News
+                    </div>
+                    <div class="tab" onclick="changeTab('videos')">
+                        <i class="fas fa-video"></i> Videos
+                    </div>
+                </div>
+                <div id="news-view" class="content-view active">
+                    <div class="section-header">
+                        Latest News <span class="count" id="news-count">0</span>
+                    </div>
+                    <div id="news-content">
+                        <div class="placeholder">
+                            <i class="fas fa-search"></i>
+                            <p>Click on a topic in the word cloud to see related news</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="videos-view" class="content-view">
+                    <div class="section-header">
+                        Featured Videos <span class="count" id="videos-count">0</span>
+                    </div>
+                    <div id="videos-content">
+                        <div class="placeholder">
+                            <i class="fas fa-film"></i>
+                            <p>Click on a topic in the word cloud to see related videos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debug-info"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            displayMode: 'cloud', // 'cloud' or 'grid'
+            darkMode: false,
+            debugMode: false,
+            maxCloudWords: 100,
+            initialNewsLimit: 5,
+            initialVideosLimit: 5,
+            newsIncrement: 5,
+            videosIncrement: 5,
+            colorCategories: {
+                politics: ['Trump', 'Election', 'President', 'Biden', 'Political', 'Candidate', 'Vote', 'Debate', 'Congress', 'Democracy', 'GOP', 'Republican', 'Democrat', 'Liberal', 'Conservative'],
+                government: ['Government', 'Federal', 'Law', 'Policy', 'Legislation', 'Regulation', 'Administration', 'Agency', 'Senate', 'House', 'Supreme Court', 'Executive', 'Judicial', 'Cabinet'],
+                us: ['United States', 'America', 'U.S.', 'American', 'Washington', 'New York', 'California', 'Texas', 'Florida', 'Chicago', 'Los Angeles'],
+                justice: ['Court', 'Judge', 'Verdict', 'Trial', 'Lawsuit', 'Justice', 'Crime', 'Criminal', 'Police', 'Arrest', 'Prison', 'Jail', 'Attorney', 'Lawyer', 'Legal'],
+                economy: ['Economy', 'Economic', 'Market', 'Stock', 'Business', 'Financial', 'Trade', 'Industry', 'Company', 'Corporation', 'Investment', 'Dollar', 'Money', 'Jobs', 'Unemployment'],
+                social: ['Social', 'Media', 'Online', 'Facebook', 'Twitter', 'Instagram', 'TikTok', 'Internet', 'Digital', 'App', 'Platform', 'Network', 'Community'],
+                world: ['World', 'Global', 'International', 'Foreign', 'China', 'Russia', 'Europe', 'Asia', 'Middle East', 'Africa', 'Ukraine', 'Israel', 'Iran', 'NATO', 'UN'],
+                nature: ['Climate', 'Environment', 'Weather', 'Storm', 'Hurricane', 'Earthquake', 'Flood', 'Disaster', 'Wildlife', 'Species', 'Animal', 'Plant', 'Forest', 'Ocean', 'Energy'],
+                tech: ['Technology', 'Tech', 'AI', 'Artificial Intelligence', 'Robot', 'Computer', 'Software', 'Hardware', 'Internet', 'Data', 'Cyber', 'Digital', 'Apple', 'Google', 'Microsoft']
+            }
+        };
+        
+        // Global state
+        let selectedWord = null;
+        let wordcloudData = null;
+        let headlinesData = null;
+        let d3Layout = null;
+        let allNews = [];
+        let allVideos = [];
+        let displayedNewsCount = 0;
+        let displayedVideosCount = 0;
+        
+        // Color palette with enhanced brightness for better contrast
+        const colorPalette = {
+            politics: '#FF5252',     // Bright Red
+            government: '#26C6DA',   // Bright Cyan
+            us: '#FF8A80',           // Bright Coral
+            justice: '#B388FF',      // Bright Purple
+            economy: '#FFAB40',      // Bright Orange
+            social: '#40C4FF',       // Bright Light Blue
+            world: '#7C4DFF',        // Bright Deep Purple
+            nature: '#69F0AE',       // Bright Green
+            tech: '#448AFF',         // Bright Blue
+            default: '#205375'       // Default Blue
+        };
+        
+        // DOM Elements
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
+        
+        // Initialize app
+        function initializeApp() {
+            applyTheme();
+            setupEventListeners();
+            loadData();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            window.addEventListener('resize', debounce(() => {
+                if (wordcloudData) {
+                    generateWordVisualization();
+                }
+            }, 300));
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            config.darkMode = !config.darkMode;
+            
+            if (config.darkMode) {
+                body.classList.add('dark-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark-theme');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Regenerates visualization
+            if (wordcloudData) {
+                generateWordVisualization();
+            }
+        }
+        
+        // Apply saved theme
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                config.darkMode = true;
+            }
+        }
+        
+        // Toggle display mode between cloud and grid
+        function toggleDisplayMode() {
+            config.displayMode = config.displayMode === 'cloud' ? 'grid' : 'cloud';
+            const modeText = document.getElementById('mode-text');
+            modeText.textContent = config.displayMode === 'cloud' ? 'Grid View' : 'Cloud View';
+            
+            if (wordcloudData) {
+                generateWordVisualization();
+            }
+            
+            logDebug(`Display mode changed to: ${config.displayMode}`);
+        }
+        
+        // Toggle debug info
+        function toggleDebug() {
+            config.debugMode = !config.debugMode;
+            const debugInfo = document.getElementById('debug-info');
+            
+            if (config.debugMode) {
+                debugInfo.classList.add('visible');
+            } else {
+                debugInfo.classList.remove('visible');
+            }
+            
+            logDebug(`Debug mode: ${config.debugMode ? 'enabled' : 'disabled'}`);
+        }
+        
+        // Reset word selection
+        function resetSelection() {
+            if (selectedWord) {
+                // Remove selected class
+                document.querySelectorAll('.word').forEach(w => w.classList.remove('selected'));
+                
+                // Reset state
+                selectedWord = null;
+                displayedNewsCount = 0;
+                displayedVideosCount = 0;
+                
+                // Update UI
+                document.getElementById('reset-button').classList.remove('visible');
+                document.getElementById('topic-selected').classList.remove('visible');
+                document.getElementById('selected-topic-text').textContent = '';
+                
+                // Clear content
+                document.getElementById('news-content').innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-search"></i>
+                        <p>Click on a topic in the word cloud to see related news</p>
+                    </div>
+                `;
+                document.getElementById('videos-content').innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-film"></i>
+                        <p>Click on a topic in the word cloud to see related videos</p>
+                    </div>
+                `;
+                
+                // Reset count indicators
+                document.getElementById('news-count').textContent = "0";
+                document.getElementById('videos-count').textContent = "0";
+                
+                // Restore all words opacity
+                document.querySelectorAll('.word').forEach(word => {
+                    word.style.opacity = '1';
+                    word.style.pointerEvents = 'auto';
+                });
+                
+                logDebug('Selection reset');
+            }
+        }
+        
+        // Tab switching
+        function changeTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contentViews = document.querySelectorAll('.content-view');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contentViews.forEach(view => view.classList.remove('active'));
+            
+            if (tabName === 'news') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('news-view').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('videos-view').classList.add('active');
+            }
+            
+            logDebug(`Tab changed to: ${tabName}`);
+        }
+        
+        // Loads data from JSON
+        async function loadData() {
+            try {
+                showLoading();
+                logDebug('Fetching data...');
+                
+                const wordcloudResponse = await fetch('wordcloud.json');
+                const headlinesResponse = await fetch('headlines.json');
+                
+                if (!wordcloudResponse.ok || !headlinesResponse.ok) {
+                    throw new Error('Failed to load data files');
+                }
+                
+                wordcloudData = await wordcloudResponse.json();
+                headlinesData = await headlinesResponse.json();
+                
+                logDebug('Data loaded successfully');
+                
+                // Reset selection
+                resetSelection();
+                
+                // Generate visualization
+                generateWordVisualization();
+                
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                console.error('Error loading data:', error);
+                document.getElementById('word-cloud').innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading data: ${error.message}<br><br>
+                        Make sure wordcloud.json and headlines.json files are available.</p>
+                    </div>
+                `;
+                
+                logDebug(`Error loading data: ${error.message}`);
+            }
+        }
+        
+        // Regenerate layout
+        function regenerateLayout() {
+            if (!wordcloudData) {
+                alert('Please fetch data first');
+                return;
+            }
+            
+            generateWordVisualization();
+            logDebug('Visualization regenerated');
+        }
+        
+        // Show loading state
+        function showLoading() {
+            const container = document.getElementById('word-cloud');
+            container.innerHTML = '';
+            
+            const loader = document.createElement('div');
+            loader.className = 'loader';
+            container.appendChild(loader);
+        }
+        
+        // Hide loading state
+        function hideLoading() {
+            const loader = document.querySelector('.loader');
+            if (loader) {
+                loader.remove();
+            }
+        }
+        
+        // Determine word color category
+        function getWordColorClass(word) {
+            const text = word.toLowerCase();
+            
+            for (const [category, keywords] of Object.entries(config.colorCategories)) {
+                for (const keyword of keywords) {
+                    if (text.includes(keyword.toLowerCase())) {
+                        return `color-${category}`;
+                    }
+                }
+            }
+            
+            return 'color-default';
+        }
+        
+        // Determine word color 
+        function getWordColor(word) {
+            const text = word.toLowerCase();
+            
+            for (const [category, keywords] of Object.entries(config.colorCategories)) {
+                for (const keyword of keywords) {
+                    if (text.includes(keyword.toLowerCase())) {
+                        return colorPalette[category];
+                    }
+                }
+            }
+            
+            return colorPalette.default;
+        }
+        
+        // Generate word visualization
+        function generateWordVisualization() {
+            if (!wordcloudData || !wordcloudData["frequency of image length"]) {
+                logDebug('Invalid word cloud data format');
+                return;
+            }
+            
+            const container = document.getElementById('word-cloud');
+            container.innerHTML = '';
+            
+            // Parse word frequency data
+            const frequencyData = wordcloudData["frequency of image length"];
+            const words = Object.entries(frequencyData)
+                .map(([text, value]) => ({ text, value }))
+                .sort((a, b) => b.value - a.value)
+                .slice(0, config.maxCloudWords);
+            
+            // Calculate min and max values for proper scaling
+            const minValue = Math.min(...words.map(word => word.value));
+            const maxValue = Math.max(...words.map(word => word.value));
+            
+            logDebug(`Generating visualization for ${words.length} words in ${config.displayMode} mode`);
+            
+            // Choose visualization mode
+            if (config.displayMode === 'cloud') {
+                generateD3Cloud(words, container, minValue, maxValue);
+            } else {
+                generateWordGrid(words, container, minValue, maxValue);
+            }
+        }
+        
+        // Generate D3 word cloud
+        function generateD3Cloud(words, container, minValue, maxValue) {
+            // Get container dimensions
+            const width = container.offsetWidth;
+            const height = container.offsetHeight || 600;
+            
+            // Clear container
+            d3.select(container).selectAll("*").remove();
+            
+            // Calculate font size scale based on min/max values
+            const fontSizeScale = d3.scaleLinear()
+                .domain([minValue, maxValue])
+                .range([14, 60]);
+            
+            // Create SVG
+            const svg = d3.select(container)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width/2},${height/2})`);
+            
+            // Configure cloud layout
+            d3Layout = d3.layout.cloud()
+                .size([width, height])
+                .words(words.map(d => ({
+                    text: d.text,
+                    size: fontSizeScale(d.value),
+                    value: d.value
+                })))
+                .padding(5)
+                .rotate(() => 0)
+                .fontSize(d => d.size)
+                .spiral("archimedean")
+                .on("end", drawCloud);
+            
+            // Start layout calculation
+            d3Layout.start();
+            
+            // Draw word cloud
+            function drawCloud(words) {
+                svg.selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                    .attr("class", d => `word ${getWordColorClass(d.text)}`)
+                    .style("font-size", d => `${d.size}px`)
+                    .style("fill", d => getWordColor(d.text))
+                    .attr("text-anchor", "middle")
+                    .attr("transform", d => `translate(${d.x},${d.y})`)
+                    .text(d => d.text)
+                    .on("click", (event, d) => selectWord(d.text, event.target));
+            }
+        }
+        
+        // Generate word grid
+        function generateWordGrid(words, container, minValue, maxValue) {
+            // Clear container
+            container.innerHTML = '';
+            
+            // Create word grid container
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'word-grid';
+            container.appendChild(gridContainer);
+            
+            // Calculate font size scale based on min/max values
+            const minFontSize = 14;
+            const maxFontSize = 42;
+            
+            // Create each word element
+            words.forEach(word => {
+                // Calculate font size based on value
+                const fontSize = minFontSize + ((word.value - minValue) / (maxValue - minValue)) * (maxFontSize - minFontSize);
+                
+                // Create word element
+                const wordElement = document.createElement('div');
+                wordElement.className = `word ${getWordColorClass(word.text)}`;
+                wordElement.textContent = word.text;
+                wordElement.style.fontSize = `${fontSize}px`;
+                wordElement.style.color = getWordColor(word.text);
+                
+                // Add click event
+                wordElement.addEventListener('click', () => selectWord(word.text, wordElement));
+                
+                // Add to container
+                gridContainer.appendChild(wordElement);
+            });
+        }
+        
+        // Select a word
+        function selectWord(wordText, element) {
+            // Skip if same word already selected
+            if (selectedWord === wordText) return;
+            
+            logDebug(`Word selected: ${wordText}`);
+            
+            // Reset previous selection visuals
+            document.querySelectorAll('.word').forEach(w => w.classList.remove('selected'));
+            
+            // Update state
+            selectedWord = wordText;
+            
+            // Highlight selected word
+            element.classList.add('selected');
+            
+            // Show reset button and topic selection
+            document.getElementById('reset-button').classList.add('visible');
+            const topicElement = document.getElementById('topic-selected');
+            document.getElementById('selected-topic-text').textContent = wordText;
+            topicElement.classList.add('visible');
+            
+            // Dim other words
+            document.querySelectorAll('.word').forEach(w => {
+                if (w !== element) {
+                    w.style.opacity = '0.4';
+                }
+            });
+            
+            // Reset displayed content counts
+            displayedNewsCount = 0;
+            displayedVideosCount = 0;
+            
+            // Find related content
+            findAndDisplayRelatedContent(wordText);
+        }
+        
+        // Find and display related content
+        function findAndDisplayRelatedContent(word) {
+            if (!headlinesData) {
+                logDebug('No headlines data available');
+                return;
+            }
+            
+            // Find all related content
+            allNews = findRelatedHeadlines(word);
+            allVideos = findRelatedVideos(word);
+            
+            // Update count indicators
+            document.getElementById('news-count').textContent = allNews.length;
+            document.getElementById('videos-count').textContent = allVideos.length;
+            
+            // Display initial batch of content
+            displayRelatedNews(allNews);
+            displayRelatedVideos(allVideos);
+        }
+        
+        // Display related news
+        function displayRelatedNews(news) {
+            const newsContainer = document.getElementById('news-content');
+            newsContainer.innerHTML = '';
+            
+            if (news.length === 0) {
+                newsContainer.innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-newspaper"></i>
+                        <p>No related news found for "${selectedWord}"</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display initial batch
+            const batch = news.slice(0, config.initialNewsLimit);
+            displayedNewsCount = batch.length;
+            
+            // Create news items
+            batch.forEach((item, index) => {
+                createNewsItem(item, index, newsContainer);
+            });
+            
+            // load more button
+            if (news.length > displayedNewsCount) {
+                const loadMoreBtn = document.createElement('div');
+                loadMoreBtn.className = 'load-more';
+                loadMoreBtn.textContent = `Load more news (${displayedNewsCount} of ${news.length})`;
+                loadMoreBtn.addEventListener('click', loadMoreNews);
+                newsContainer.appendChild(loadMoreBtn);
+            }
+        }
+        
+        // News item element
+        function createNewsItem(news, index, container) {
+            const newsItem = document.createElement('div');
+            newsItem.className = 'news-item';
+            newsItem.style.animationDelay = `${index * 0.1}s`;
+            
+            const title = document.createElement('div');
+            title.className = 'news-title';
+            title.textContent = news.name;
+            
+            const meta = document.createElement('div');
+            meta.className = 'news-meta';
+            
+            const dateElem = document.createElement('span');
+            dateElem.className = 'news-meta-item';
+            dateElem.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(news.datePublished)}`;
+            
+            meta.appendChild(dateElem);
+            
+            const description = document.createElement('div');
+            description.className = 'news-description';
+            description.textContent = news.description;
+            
+            const url = document.createElement('a');
+            url.className = 'news-url';
+            url.href = news.url;
+            url.textContent = "Read full article";
+            url.target = "_blank";
+            url.rel = "noopener noreferrer";
+            
+            newsItem.appendChild(title);
+            newsItem.appendChild(meta);
+            newsItem.appendChild(description);
+            newsItem.appendChild(url);
+            
+            container.appendChild(newsItem);
+        }
+        
+        // Load more news items
+        function loadMoreNews() {
+            const newsContainer = document.getElementById('news-content');
+            
+            // Remove current load more button
+            const currentBtn = newsContainer.querySelector('.load-more');
+            if (currentBtn) {
+                currentBtn.remove();
+            }
+            
+            // Calculate next batch
+            const nextBatchStart = displayedNewsCount;
+            const nextBatchEnd = Math.min(nextBatchStart + config.newsIncrement, allNews.length);
+            const nextBatch = allNews.slice(nextBatchStart, nextBatchEnd);
+            
+            // New items
+            nextBatch.forEach((item, index) => {
+                createNewsItem(item, index, newsContainer);
+            });
+            
+            // Update counter
+            displayedNewsCount = nextBatchEnd;
+            
+            // load more button
+            if (displayedNewsCount < allNews.length) {
+                const loadMoreBtn = document.createElement('div');
+                loadMoreBtn.className = 'load-more';
+                loadMoreBtn.textContent = `Load more news (${displayedNewsCount} of ${allNews.length})`;
+                loadMoreBtn.addEventListener('click', loadMoreNews);
+                newsContainer.appendChild(loadMoreBtn);
+            }
+            
+            logDebug(`Loaded more news: ${nextBatchStart} to ${nextBatchEnd} of ${allNews.length}`);
+        }
+        
+        // Display related videos
+        function displayRelatedVideos(videos) {
+            const videosContainer = document.getElementById('videos-content');
+            videosContainer.innerHTML = '';
+            
+            if (videos.length === 0) {
+                videosContainer.innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-film"></i>
+                        <p>No related videos found for "${selectedWord}"</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display initial batch
+            const batch = videos.slice(0, config.initialVideosLimit);
+            displayedVideosCount = batch.length;
+            
+            // Create video items
+            batch.forEach((item, index) => {
+                createVideoItem(item, index, videosContainer);
+            });
+            
+            // Add load more button if more items exist
+            if (videos.length > displayedVideosCount) {
+                const loadMoreBtn = document.createElement('div');
+                loadMoreBtn.className = 'load-more';
+                loadMoreBtn.textContent = `Load more videos (${displayedVideosCount} of ${videos.length})`;
+                loadMoreBtn.addEventListener('click', loadMoreVideos);
+                videosContainer.appendChild(loadMoreBtn);
+            }
+        }
+        
+        // Video item element
+        function createVideoItem(video, index, container) {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'video-item';
+            videoItem.style.animationDelay = `${index * 0.1}s`;
+            
+            // Thumbnail
+            if (video.thumbnailUrl) {
+                const thumbnailContainer = document.createElement('div');
+                thumbnailContainer.className = 'video-thumbnail-container';
+                
+                const thumbnailLink = document.createElement('a');
+                thumbnailLink.href = video.contentUrl;
+                thumbnailLink.target = "_blank";
+                thumbnailLink.rel = "noopener noreferrer";
+                
+                const thumbnail = document.createElement('img');
+                thumbnail.className = 'video-thumbnail';
+                thumbnail.src = video.thumbnailUrl;
+                thumbnail.alt = video.name;
+                thumbnail.loading = "lazy";
+                
+                const playButton = document.createElement('div');
+                playButton.className = 'video-play-button';
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+                
+                thumbnailLink.appendChild(thumbnail);
+                thumbnailContainer.appendChild(thumbnailLink);
+                thumbnailContainer.appendChild(playButton);
+                videoItem.appendChild(thumbnailContainer);
+            }
+            
+            const title = document.createElement('div');
+            title.className = 'video-title';
+            title.textContent = video.name;
+            
+            const meta = document.createElement('div');
+            meta.className = 'video-meta';
+            
+            if (video.datePublished) {
+                const dateElem = document.createElement('span');
+                dateElem.className = 'video-meta-item';
+                dateElem.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(video.datePublished)}`;
+                meta.appendChild(dateElem);
+            }
+            
+            const description = document.createElement('div');
+            description.className = 'video-description';
+            description.textContent = video.description;
+            
+            const url = document.createElement('a');
+            url.className = 'video-url';
+            url.href = video.contentUrl;
+            url.textContent = "Watch video";
+            url.target = "_blank";
+            url.rel = "noopener noreferrer";
+            
+            videoItem.appendChild(title);
+            videoItem.appendChild(meta);
+            videoItem.appendChild(description);
+            videoItem.appendChild(url);
+            
+            container.appendChild(videoItem);
+        }
+        
+        // Load more video items
+        function loadMoreVideos() {
+            const videosContainer = document.getElementById('videos-content');
+            
+            // Remove current load more button
+            const currentBtn = videosContainer.querySelector('.load-more');
+            if (currentBtn) {
+                currentBtn.remove();
+            }
+            
+            // Calculate next batch
+            const nextBatchStart = displayedVideosCount;
+            const nextBatchEnd = Math.min(nextBatchStart + config.videosIncrement, allVideos.length);
+            const nextBatch = allVideos.slice(nextBatchStart, nextBatchEnd);
+            
+            // Add new items
+            nextBatch.forEach((item, index) => {
+                createVideoItem(item, index, videosContainer);
+            });
+            
+            // Update counter
+            displayedVideosCount = nextBatchEnd;
+            
+            // Add new load more button if needed
+            if (displayedVideosCount < allVideos.length) {
+                const loadMoreBtn = document.createElement('div');
+                loadMoreBtn.className = 'load-more';
+                loadMoreBtn.textContent = `Load more videos (${displayedVideosCount} of ${allVideos.length})`;
+                loadMoreBtn.addEventListener('click', loadMoreVideos);
+                videosContainer.appendChild(loadMoreBtn);
+            }
+            
+            logDebug(`Loaded more videos: ${nextBatchStart} to ${nextBatchEnd} of ${allVideos.length}`);
+        }
+        
+        // Find related headlines
+        function findRelatedHeadlines(word) {
+            const related = [];
+            const wordLower = word.toLowerCase();
+            
+            try {
+                // Check each headline section
+                for (const headline in headlinesData.news) {
+                    const headlineObj = headlinesData.news[headline];
+                    
+                    for (const newsKey in headlineObj) {
+                        const news = headlineObj[newsKey];
+                        
+                        if (news.name && news.name.toLowerCase().includes(wordLower) || 
+                            news.description && news.description.toLowerCase().includes(wordLower)) {
+                            related.push(news);
+                        }
+                    }
+                }
+                
+                // Sort by date
+                return related.sort((a, b) => new Date(b.datePublished || 0) - new Date(a.datePublished || 0));
+            } catch (error) {
+                console.error('Error finding related headlines:', error);
+                logDebug(`Error finding related headlines: ${error.message}`);
+                return [];
+            }
+        }
+        
+        // Find related videos
+        function findRelatedVideos(word) {
+            const related = [];
+            const wordLower = word.toLowerCase();
+            
+            try {
+                // Check each headline section
+                for (const headline in headlinesData.videos) {
+                    const headlineObj = headlinesData.videos[headline];
+                    
+                    for (const videoKey in headlineObj) {
+                        const video = headlineObj[videoKey];
+                        
+                        if (video.name && video.name.toLowerCase().includes(wordLower) || 
+                            video.description && video.description.toLowerCase().includes(wordLower)) {
+                            related.push(video);
+                        }
+                    }
+                }
+                
+                // Sort by date if available
+                return related.sort((a, b) => {
+                    const dateA = a.datePublished ? new Date(a.datePublished) : new Date(0);
+                    const dateB = b.datePublished ? new Date(b.datePublished) : new Date(0);
+                    return dateB - dateA;
+                });
+            } catch (error) {
+                console.error('Error finding related videos:', error);
+                logDebug(`Error finding related videos: ${error.message}`);
+                return [];
+            }
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString; // Return original if invalid
+                
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short', 
+                    day: 'numeric'
+                });
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString || 'N/A';
+            }
+        }
+        
+        // Debug logging
+        function logDebug(message) {
+            if (!config.debugMode) return;
+            
+            console.log(`[DEBUG] ${message}`);
+            
+            const debugElement = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logItem = document.createElement('div');
+            logItem.innerHTML = `<span style="color: var(--primary-teal)">[${timestamp}]</span> ${message}`;
+            
+            debugElement.appendChild(logItem);
+            debugElement.scrollTop = debugElement.scrollHeight;
+        }
+        
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

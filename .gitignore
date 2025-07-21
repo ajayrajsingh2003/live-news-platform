@@ -1,5 +1,7 @@
-# Ignore .env files
+node_modules/
 .env
+npm-debug.log
+.DS_Store
 
 # Ignore compiled Python files
 *.pyc
