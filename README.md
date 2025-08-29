@@ -12,7 +12,7 @@ This research project, developed in association with Saint Peter's University, a
 Unlike static word clouds, our system dynamically processes real-time news data using Natural Language Processing (NLP), web scraping, and API integration. It extracts and visualizes frequently occurring keywords, allowing users to interact with them. Upon selection, the system triggers a query-based retrieval mechanism to fetch relevant multimedia content, including articles and videos, in real time. This interactive approach bridges the gap between static visualization and dynamic content retrieval, enabling users to explore evolving news trends efficiently.
 
 ## Architecture
-![system_architecture.png](assets%2Fsystem_architecture.png)
+![system_architecture_layer.png](assets%2Fsystem_architecture_layer.png)
 
 ### Frontend
 - Web Server: Node.js/Express serving static HTML
