@@ -11,6 +11,31 @@ This research project, developed in association with Saint Peter's University, a
 
 Unlike static word clouds, our system dynamically processes real-time news data using Natural Language Processing (NLP), web scraping, and API integration. It extracts and visualizes frequently occurring keywords, allowing users to interact with them. Upon selection, the system triggers a query-based retrieval mechanism to fetch relevant multimedia content, including articles and videos, in real time. This interactive approach bridges the gap between static visualization and dynamic content retrieval, enabling users to explore evolving news trends efficiently.
 
+## Recognition & Impact
+
+This project has been showcased at **Symposium 2025 (SPU)**, the **NJBDA Symposium & Research Conference 2025**, and as part of a **Guest Lecture at Saint Peter’s International Exchange Program (India) 2025**.  
+These presentations highlight our project's academic validation, community impact, and global reach.
+
+**Academic Affiliation:**
+- Saint Peter's University, Data Science Institute, Jersey City, NJ, USA
+
+### Gallery (Click to View LinkedIn Posts)
+
+| Symposium @ SPU 2025 | NJBDA Symposium |
+|----------------------|-----------------|
+| [![Symposium SPU](assets%2Fsymposium-spu2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7323804099462762496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7323804099462762496%29) | [![NJBDA Symposium](assets%2Fnjbda-symposium-2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) |
+
+| NJBDA Research Conference                                                                                                                                                                                                                             | Guest Lecture (Exchange Program, India)                                                                              |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| [![NJBDA Research Presentation](assets%2Fnjbda-research-presentation.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) | ![Exchange Program](assets/india-exchange-May2025.jpeg)![Group Photo](assets/Exchange%20Program%20India%20group%20photo.jpeg)
+
+## Development Team
+
+**Research & Development:**
+- [**Ajay Raj Singh**](https://www.linkedin.com/in/connectwithajayrajsingh/)
+- [**Venkata Akhil Mettu**](https://www.linkedin.com/in/venkata-akhil-mettu-51a48b277/)
+- [**Gulhan Bizel**](https://www.linkedin.com/in/gulhan-vanli-bizel-phd-042b2728/)
+- 
 ## Architecture
 ![system_architecture_layer.png](assets%2Fsystem_architecture_layer.png)
 
@@ -162,35 +187,9 @@ The architecture supports flexible deployment with frontend independence, modula
 - Advanced D3.js implementation for news exploration
 - Modular architecture supporting reusable components
 
-## Recognition & Impact
-
-This project has been showcased at **Symposium 2025 (SPU)**, the **NJBDA Symposium & Research Conference 2025**, and as part of a **Guest Lecture at Saint Peter’s International Exchange Program (India) 2025**.  
-These presentations highlight our project's academic validation, community impact, and global reach.
-
-### Gallery (Click to View LinkedIn Posts)
-
-| Symposium @ SPU 2025 | NJBDA Symposium |
-|----------------------|-----------------|
-| [![Symposium SPU](assets%2Fsymposium-spu2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7323804099462762496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7323804099462762496%29) | [![NJBDA Symposium](assets%2Fnjbda-symposium-2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) |
-
-| NJBDA Research Conference                                                                                                                                                                                                                             | Guest Lecture (Exchange Program, India)                                                                              |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| [![NJBDA Research Presentation](assets%2Fnjbda-research-presentation.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) | ![Exchange Program](assets/india-exchange-May2025.jpeg)![Group Photo](assets/Exchange%20Program%20India%20group%20photo.jpeg)
-
-## Development Team
-
-**Research & Development:**
-- [**Ajay Raj Singh**](https://www.linkedin.com/in/connectwithajayrajsingh/)
-- [**Venkata Akhil Mettu**](https://www.linkedin.com/in/venkata-akhil-mettu-51a48b277/)
-- [**Gulhan Bizel**](https://www.linkedin.com/in/gulhan-vanli-bizel-phd-042b2728/)
-
-**Academic Affiliation:**
-- Saint Peter's University, Data Science Institute, Jersey City, NJ, USA
-
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for complete details.
 
 We welcome contributions including bug reports, feature suggestions, pull requests, and documentation improvements.
-
 Built for accessible news exploration and data-driven journalism.
