@@ -1,6 +1,7 @@
 # Live News Platform - Trending Topics Explorer
 
-Interactive Keyword-Based News Retrieval: Enhancing Content Discovery with NLP and Real-Time Data Processing
+## Interactive Keyword-Based News Retrieval: Enhancing Content Discovery with NLP and Real-Time Data Processing
+**Saint Peter's Research** →[Saint Peter's Instant Newsroom for Student](https://word-cloud-peacock-eea067d6545e.herokuapp.com/)
 
 A dynamic word cloud visualization platform that transforms trending news topics into interactive visual experiences. Built with advanced NLP techniques and real-time data processing, this system provides users with an intuitive way to explore evolving news landscapes.
 
@@ -8,7 +9,7 @@ A dynamic word cloud visualization platform that transforms trending news topics
 
 This research project, developed in association with Saint Peter's University, addresses the growing need for accessible news exploration tools. By combining Google Trends data with news headlines, our system enhances the contextual relevance of trending keywords and provides real-time insights into current events.
 
-The platform features interactive visualizations powered by D3.js, smart content discovery with related news articles and videos, a real-time Python data pipeline, modern responsive UI with theme support, and trend analysis through PyTrends integration.
+Unlike static word clouds, our system dynamically processes real-time news data using Natural Language Processing (NLP), web scraping, and API integration. It extracts and visualizes frequently occurring keywords, allowing users to interact with them. Upon selection, the system triggers a query-based retrieval mechanism to fetch relevant multimedia content, including articles and videos, in real time. This interactive approach bridges the gap between static visualization and dynamic content retrieval, enabling users to explore evolving news trends efficiently.
 
 ## Architecture
 
@@ -88,12 +89,12 @@ Generated data files include `wordcloud.json` for word frequencies and trending 
 
 ```
 live-news-platform/
-├── src/                          # Python data pipeline
+├── src_code/                          # Python data pipeline
 │   ├── main.py                   # Main orchestrator
 │   ├── newYorkAPI.py            # NYTimes API client
-│   ├── ProcessHeadlines.py      # Text processing utilities
-│   ├── ProcessWords.py          # Trend analysis & scoring
-│   └── VideoDataAzure.py        # Bing API integration
+│   ├── processHeadlines.py      # Text processing utilities
+│   ├── processWords.py          # Trend analysis & scoring
+│   └── videoDataAzure.py        # Bing API integration
 ├── public/                       # Frontend assets
 │   ├── wcindex.html             # Main web application
 │   ├── wordcloud.json           # Word frequency data
@@ -157,12 +158,27 @@ The architecture supports flexible deployment with frontend independence, modula
 - Advanced D3.js implementation for news exploration
 - Modular architecture supporting reusable components
 
+## Recognition & Impact
+
+This project has been showcased at **Symposium 2025 (SPU)**, the **NJBDA Symposium & Research Conference 2025**, and as part of a **Guest Lecture at Saint Peter’s International Exchange Program (India) 2025**.  
+These presentations highlight our project's academic validation, community impact, and global reach.
+
+### 📸 Gallery (Click to View LinkedIn Posts)
+
+| Symposium @ SPU 2025 | NJBDA Symposium |
+|----------------------|-----------------|
+| [![Symposium SPU](assets%2Fsymposium-spu2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7323804099462762496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7323804099462762496%29) | [![NJBDA Symposium](assets%2Fnjbda-symposium-2025.jpeg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) |
+
+| NJBDA Research Conference                                                                                                                                                                                                                             | Guest Lecture (Exchange Program, India)                                                                              |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| [![NJBDA Research Presentation](assets%2Fnjbda-research-presentation.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7330083180433002496/?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7330083180433002496%29) | ![Exchange Program](assets/india-exchange-May2025.jpeg)![Group Photo](assets/Exchange%20Program%20India%20group%20photo.jpeg)
+
 ## Development Team
 
 **Research & Development:**
-- Venkata Akhil Mettu 
-- Ajay Raj Singh
-- Gulhan Bizel
+- [**Ajay Raj Singh**](https://www.linkedin.com/in/connectwithajayrajsingh/)
+- [**Venkata Akhil Mettu**](https://www.linkedin.com/in/venkata-akhil-mettu-51a48b277/)
+- [**Gulhan Bizel**](https://www.linkedin.com/in/gulhan-vanli-bizel-phd-042b2728/)
 
 **Academic Affiliation:**
 - Saint Peter's University, Data Science Institute, Jersey City, NJ, USA
@@ -172,11 +188,5 @@ The architecture supports flexible deployment with frontend independence, modula
 This project is licensed under the MIT License. See the LICENSE file for complete details.
 
 We welcome contributions including bug reports, feature suggestions, pull requests, and documentation improvements.
-
-## Resources
-
-- Live Demo: https://word-cloud-peacock-eea067d6545e.herokuapp.com/
-- API Documentation: See individual source files for detailed usage
-- Project Repository: GitHub - Live News Platform
 
 Built for accessible news exploration and data-driven journalism.
