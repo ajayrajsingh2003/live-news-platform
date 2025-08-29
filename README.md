@@ -167,7 +167,7 @@ The architecture supports flexible deployment with frontend independence, modula
 This project has been showcased at **Symposium 2025 (SPU)**, the **NJBDA Symposium & Research Conference 2025**, and as part of a **Guest Lecture at Saint Peter’s International Exchange Program (India) 2025**.  
 These presentations highlight our project's academic validation, community impact, and global reach.
 
-### 📸 Gallery (Click to View LinkedIn Posts)
+### Gallery (Click to View LinkedIn Posts)
 
 | Symposium @ SPU 2025 | NJBDA Symposium |
 |----------------------|-----------------|
