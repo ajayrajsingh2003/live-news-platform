@@ -35,7 +35,7 @@ These presentations highlight our project's academic validation, community impac
 - [**Ajay Raj Singh**](https://www.linkedin.com/in/connectwithajayrajsingh/)
 - [**Venkata Akhil Mettu**](https://www.linkedin.com/in/venkata-akhil-mettu-51a48b277/)
 - [**Gulhan Bizel**](https://www.linkedin.com/in/gulhan-vanli-bizel-phd-042b2728/)
-- 
+
 ## Architecture
 ![system_architecture_layer.png](assets%2Fsystem_architecture_layer.png)
 
